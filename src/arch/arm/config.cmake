@@ -12,7 +12,12 @@ endif()
 
 set(KernelArmPASizeBits40 OFF)
 set(KernelArmPASizeBits44 OFF)
-if(KernelArmCortexA53)
+if(KernelArmCortexA35)
+    set(KernelArmICacheVIPT ON)
+    set(KernelArmPASizeBits40 ON)
+    math(EXPR KernelPaddrUserTop "(1 << 40) - 1")
+elseif(KernelArmCortexA53)
+    set(KernelArmICacheVIPT ON)
     set(KernelArmPASizeBits40 ON)
     math(EXPR KernelPaddrUserTop "(1 << 40) - 1")
 elseif(KernelArmCortexA57)
@@ -21,6 +26,7 @@ elseif(KernelArmCortexA57)
 endif()
 config_set(KernelArmPASizeBits40 ARM_PA_SIZE_BITS_40 "${KernelArmPASizeBits40}")
 config_set(KernelArmPASizeBits44 ARM_PA_SIZE_BITS_44 "${KernelArmPASizeBits44}")
+config_set(KernelArmICacheVIPT ARM_ICACHE_VIPT "${KernelArmICacheVIPT}")
 
 if(KernelSel4ArchAarch32)
     # 64-bit targets may be building in 32-bit mode,
@@ -77,7 +83,7 @@ config_option(
     KernelArmHypervisorSupport ARM_HYPERVISOR_SUPPORT
     "Build as Hypervisor. Utilise ARM virtualisation extensions to build the kernel as a hypervisor"
     DEFAULT ${default_hyp_support}
-    DEPENDS "KernelArmCortexA15 OR KernelArmCortexA57 OR KernelArmCortexA53"
+    DEPENDS "KernelArmCortexA15 OR KernelArmCortexA35 OR KernelArmCortexA57 OR KernelArmCortexA53"
 )
 
 config_option(
@@ -113,8 +119,10 @@ config_option(
     DEFAULT_DISABLED OFF
 )
 
+config_option(KernelArmSMMU ARM_SMMU "Enable SystemMMU" DEFAULT OFF DEPENDS "KernelPlatformTx2")
+
 config_option(
-    KernelArmSMMU ARM_SMMU "Enable SystemMMU for the Tegra TK1 SoC"
+    KernelTk1SMMU TK1_SMMU "Enable SystemMMU for the Tegra TK1 SoC"
     DEFAULT OFF
     DEPENDS "KernelPlatformTK1"
 )
@@ -145,13 +153,13 @@ config_option(
     DEFAULT OFF
     DEPENDS "KernelArchArmV7a OR KernelArchArmV8a;KernelArmHypervisorSupport"
 )
-config_option(KernelARMSMMUInterruptEnable SMMU_INTERRUPT_ENABLE "Enable SMMU interrupts. \
+config_option(KernelTk1SMMUInterruptEnable SMMU_INTERRUPT_ENABLE "Enable SMMU interrupts. \
     SMMU interrupts currently only serve a debug purpose as \
     they are not forwarded to user level. Enabling this will \
     cause some fault types to print out a message in the kernel. \
     WARNING: Printing fault information is slow and rapid faults \
     can result in all time spent in the kernel printing fault \
-    messages" DEFAULT "${KernelDebugBuild}" DEPENDS "KernelArmSMMU" DEFAULT_DISABLED OFF)
+    messages" DEFAULT "${KernelDebugBuild}" DEPENDS "KernelTk1SMMU" DEFAULT_DISABLED OFF)
 
 config_option(
     KernelAArch32FPUEnableContextSwitch AARCH32_FPU_ENABLE_CONTEXT_SWITCH
@@ -177,6 +185,7 @@ if(
     KernelArmCortexA7
     OR KernelArmCortexA8
     OR KernelArmCortexA15
+    OR KernelArmCortexA35
     OR KernelArmCortexA53
     OR KernelArmCortexA57
 )
@@ -216,6 +225,7 @@ add_sources(
         object/tcb.c
         object/iospace.c
         object/vcpu.c
+        object/smmu.c
         smp/ipi.c
 )
 

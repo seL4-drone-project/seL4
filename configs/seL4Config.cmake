@@ -125,6 +125,10 @@ unset(CONFIGURE_CLK_SHIFT CACHE)
 unset(CONFIGURE_CLK_MAGIC CACHE)
 unset(CONFIGURE_KERNEL_WCET CACHE)
 unset(CONFIGURE_TIMER_PRECISION CACHE)
+# CONFIGURE_MAX_CB and CONFIGURE_MAX_SID are related to the kernel SMMU on Arm.
+unset(CONFIGURE_MAX_SID CACHE)
+unset(CONFIGURE_MAX_CB CACHE)
+
 # CLK_SHIFT and CLK_MAGIC are generated from tools/reciprocal.py
 # based on the TIMER_CLK_HZ to simulate division.
 # This could be moved to a cmake function
@@ -136,7 +140,7 @@ function(declare_default_headers)
         0
         CONFIGURE
         ""
-        "TIMER_FREQUENCY;MAX_IRQ;NUM_PPI;PLIC_MAX_NUM_INT;INTERRUPT_CONTROLLER;TIMER;SMMU;CLK_SHIFT;CLK_MAGIC;KERNEL_WCET;TIMER_PRECISION"
+        "TIMER_FREQUENCY;MAX_IRQ;NUM_PPI;PLIC_MAX_NUM_INT;INTERRUPT_CONTROLLER;TIMER;SMMU;CLK_SHIFT;CLK_MAGIC;KERNEL_WCET;TIMER_PRECISION;MAX_SID;MAX_CB"
         ""
     )
     set(CONFIGURE_TIMER_FREQUENCY "${CONFIGURE_TIMER_FREQUENCY}" CACHE INTERNAL "")
@@ -150,6 +154,8 @@ function(declare_default_headers)
     set(CONFIGURE_CLK_MAGIC "${CONFIGURE_CLK_MAGIC}" CACHE INTERNAL "")
     set(CONFIGURE_KERNEL_WCET "${CONFIGURE_KERNEL_WCET}" CACHE INTERNAL "")
     set(CONFIGURE_TIMER_PRECISION "${CONFIGURE_TIMER_PRECISION}" CACHE INTERNAL "")
+    set(CONFIGURE_MAX_SID "${CONFIGURE_MAX_SID}" CACHE INTERNAL "")
+    set(CONFIGURE_MAX_CB "${CONFIGURE_MAX_CB}" CACHE INTERNAL "")
 endfunction()
 
 # For all of the common variables we set a default value here if they haven't
@@ -162,6 +168,7 @@ foreach(
     KernelArmCortexA8
     KernelArmCortexA9
     KernelArmCortexA15
+    KernelArmCortexA35
     KernelArmCortexA53
     KernelArmCortexA57
     KernelArm1136JF_S
@@ -169,6 +176,7 @@ foreach(
     KernelArchArmV7a
     KernelArchArmV7ve
     KernelArchArmV8a
+    KernelArmSMMU
 )
     unset(${var} CACHE)
     set(${var} OFF)
@@ -196,6 +204,7 @@ config_set(KernelArmCortexA7 ARM_CORTEX_A7 "${KernelArmCortexA7}")
 config_set(KernelArmCortexA8 ARM_CORTEX_A8 "${KernelArmCortexA8}")
 config_set(KernelArmCortexA9 ARM_CORTEX_A9 "${KernelArmCortexA9}")
 config_set(KernelArmCortexA15 ARM_CORTEX_A15 "${KernelArmCortexA15}")
+config_set(KernelArmCortexA35 ARM_CORTEX_A35 "${KernelArmCortexA35}")
 config_set(KernelArmCortexA53 ARM_CORTEX_A53 "${KernelArmCortexA53}")
 config_set(KernelArmCortexA57 ARM_CORTEX_A57 "${KernelArmCortexA57}")
 config_set(KernelArm1136JF_S ARM1136JF_S "${KernelArm1136JF_S}")
@@ -203,6 +212,7 @@ config_set(KernelArchArmV6 ARCH_ARM_V6 "${KernelArchArmV6}")
 config_set(KernelArchArmV7a ARCH_ARM_V7A "${KernelArchArmV7a}")
 config_set(KernelArchArmV7ve ARCH_ARM_V7VE "${KernelArchArmV7ve}")
 config_set(KernelArchArmV8a ARCH_ARM_V8A "${KernelArchArmV8a}")
+config_set(KernelArmSMMU ARM_SMMU "${KernelArmSMMU}")
 set(KernelPlatformSupportsMCS "${KernelPlatformSupportsMCS}" CACHE INTERNAL "" FORCE)
 
 # Check for v7ve before v7a as v7ve is a superset and we want to set the
@@ -225,6 +235,8 @@ elseif(KernelArmCortexA9)
     set(KernelArmCPU "cortex-a9" CACHE INTERNAL "")
 elseif(KernelArmCortexA15)
     set(KernelArmCPU "cortex-a15" CACHE INTERNAL "")
+elseif(KernelArmCortexA35)
+    set(KernelArmCPU "cortex-a35" CACHE INTERNAL "")
 elseif(KernelArmCortexA53)
     set(KernelArmCPU "cortex-a53" CACHE INTERNAL "")
 elseif(KernelArmCortexA57)
