@@ -12,6 +12,7 @@ if(KernelPlatformDroneSOC)
     declare_seL4_arch(riscv64)
     config_set(KernelRiscVPlatform RISCV_PLAT "drone-soc")
     config_set(KernelPlatformFirstHartID FIRST_HART_ID 0)
+    config_set(KernelOpenSBIPlatform OPENSBI_PLATFORM "fpga/drone-soc")
     list(APPEND KernelDTSList "tools/dts/drone-soc.dts")
     declare_default_headers(
         TIMER_FREQUENCY 20000000llu PLIC_MAX_NUM_INT 0
