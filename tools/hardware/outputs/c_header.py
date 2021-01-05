@@ -168,6 +168,11 @@ def run(tree: fdt.FdtParser, hardware: rule.HardwareYaml, config: config.Config,
     template = Environment(loader=BaseLoader, trim_blocks=True,
                            lstrip_blocks=True).from_string(HEADER_TEMPLATE)
 
+    # Filter physical memory sections with negative size.
+    # This is a hack which allows us to use sparse memory for the bootloader and
+    # the ELF-Loader and should probably be addressed somewhere else.
+    physical_memory = [r for r in physical_memory if r.size > 0]
+
     template_args = dict(builtins.__dict__, **{
         'args': args,
         'kernel_irqs': kernel_irqs,
