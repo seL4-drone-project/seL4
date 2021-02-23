@@ -15,7 +15,7 @@ if(KernelPlatformDroneSOC)
     config_set(KernelOpenSBIPlatform OPENSBI_PLATFORM "fpga/drone-soc")
     list(APPEND KernelDTSList "tools/dts/drone-soc.dts")
     declare_default_headers(
-        TIMER_FREQUENCY 20000000llu PLIC_MAX_NUM_INT 0
+        TIMER_FREQUENCY 20000000llu PLIC_MAX_NUM_INT 30
         INTERRUPT_CONTROLLER arch/machine/plic.h
     )
 else()
