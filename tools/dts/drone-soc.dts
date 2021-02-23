@@ -20,6 +20,7 @@
   model = "eth,ariane-bare";
   chosen {
     stdout-path = "/soc/uart@10000000";
+    seL4,kernel-devices = &{/soc/interrupt-controller@c000000};
   };
   cpus {
     #address-cells = <1>;
