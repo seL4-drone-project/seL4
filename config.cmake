@@ -249,6 +249,8 @@ config_string(
 )
 config_option(KernelFastpath FASTPATH "Enable IPC fastpath" DEFAULT ON)
 
+config_option(KernelHaveVPU HAVE_VPU "Enable vector instructions" DEFAULT OFF)
+
 config_string(
     KernelNumDomains NUM_DOMAINS "The number of scheduler domains in the system"
     DEFAULT 1
